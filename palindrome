@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+#Palindrome - Identifies all palindromic words within a text file.
+
+main() {
+    textfile='$1' 
+	
+    cat $textfile \
+		| to_lower_case \
+		| remove_hyphenated_words \
+        | remove_punctuation \
+		| remove_numerals \
+		| remove_short_words \
+		| remove_single_letter_words \
+		| match_first_and_last_letter \
+		| find_palindromes \
+		| count_unique_words
+}		
+
+#Converts all upper case characters to lower case
+to_lower_case() {
+    tr '[:upper:]' '[:lower:]'
+}
+
+#Removes all hyphenated words
+remove_hyphenated_words() {
+	sed 's/\b\w*[-]\w+//g'
+}
+
+#Removes all punctuation
+remove_punctuation() {
+	tr -d '[:punct:]'
+}
+
+#Removes any strings that contain numerals
+remove_numerals() {
+	sed 's/\w*[0-9]\w*//g'
+}
+
+#Removes any words that are not longer than 3 letters
+remove_short_words() {
+	sed -r 's/\b[a-z]{1,2}\b//g'
+}
+
+#Removes words that do not contain at least 2 different letters
+remove_single_letter_words() {
+	sed -r 's/\b([a-z])\1*\b//g'
+}
+
+#Finds every word that begins and ends with the same letter
+match_first_and_last_letter() {
+	grep -P -o '\b([a-z])[a-z]*\1\b' 
+}
+
+#Loops through a text file finding every palindromic word
+find_palindromes() {
+	while read word;
+	do
+		reversed='$(echo $word | rev)'
+		
+		if [ '$reversed' = '$word' ]
+		  then
+			echo $word
+		fi
+        
+	done
+}
+
+#Counts the amount of unique words in a given file and sorts in descending order
+count_unique_words() {
+	sort | uniq -c | sort -nr 
+}
+
+main $1
